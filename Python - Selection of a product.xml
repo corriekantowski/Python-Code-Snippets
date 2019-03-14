@@ -1,0 +1,334 @@
+<block label="Placement" builder:title="Placement Questions and Scripting">
+
+
+  <define label="p1" builder:title="CTRY_CLTRY" builderHint="{&quot;unlinked&quot;:[]}">
+
+    <row label="p1r1">VARIETY 1</row>
+
+    <row label="p1r2">VARIETY 2</row>
+
+    <row label="p1r3">VARIETY 3</row>
+
+    <row label="p1r4">VARIETY 4 - PLACEHOLDER</row>
+
+    <row label="p1r5">VARIETY 5 - PLACEHOLDER</row>
+  </define>
+
+
+  <define label="p2" builder:title="CVARs" builderHint="{&quot;unlinked&quot;:[]}">
+
+    <row label="p2r1">1</row>
+
+    <row label="p2r2">2</row>
+
+    <row label="p2r3">3</row>
+
+    <row label="p2r4">4</row>
+
+    <row label="p2r5">5</row>
+
+    <row label="p2r6">6</row>
+
+    <row label="p2r7">7</row>
+
+    <row label="p2r8">8</row>
+
+    <row label="p2r9">9</row>
+
+    <row label="p2r0">0</row>
+  </define>
+
+
+  <exec>
+
+#############################################
+############ PLACEMENT SCRIPTING ############
+#############################################
+
+
+### PROGRAMMER: update the placementEligible() function, adding job specific requirements for placement.
+
+###             Update maxNumberPerVariety to match the MAXIMUN NUMBER OF UNITES PLACED PER VARIETY FOR EACH RESPONDENT in the questionnaire.
+
+
+### Panel Mgmt uses these questions:
+  
+#   CPLC1
+  
+#   CTYPE
+
+  #   CVARS (total HH and Units)
+
+  #   CQL's 
+ 
+
+
+def placementEligible():
+ if CPI.but(CPI.r4, CPI.r5).any and CUNIT.but(CUNIT.r0).any and CFREQ.but(CFREQ.r8).any and VCHK2.r1 and CSEE.r1 and CWORD.but(CWORD.r5).any and CPLAC.r1 and not(CSTAT.rAK or CSTAT.rHI) and CRGS.but(CRGS.r1).any: 
+   return True
+
+ else:
+ 
+  return False
+
+
+  
+# Initialize CPLC1, SHIP and CTYPE
+
+
+CPLC1.val = CPLC1.r2.index
+  # MARK AS NOT PLACED
+
+SHIP.val = "NA"
+
+CTYPE.val = CTYPE.r4.index
+
+if placementEligible():
+
+  # set CAVLs
+
+  maxNumberPerVariety = 1
+ # **STUDY SPECIFIC** Max number of units placed for each variety
+ 
+  numVarieties       = 5
+ # **STUDY SPECIFIC** Number of varieties listed in QNR for placing
+
+
+  # getQuotaCells() returns a dictionary with marker names as the keys and a tuple consisting of (current, limit, overquota) as the values (e.g., {'/general/Male' : (38, 40, 0)}).
+
+
+  cells = gv.survey.root.quota.getQuotaCells()
+ 
+ # Programmer: update markers for each new job. Export quota sheet for the info - Distribute - Field Report - Quotas - Download
+  current1, limit1, overquota1 = cells["/Place1/mcqx9"]
+
+  current2, limit2, overquota2 = cells["/Place2/J1XD5"]
+
+  current3, limit3, overquota3 = cells["/Place3/PCGVG"]
+
+  current4, limit4, overquota4 = cells["/Place4/PROGRAMMER: UPDATE THIS"]
+
+  current5, limit5, overquota5 = cells["/Place5/PROGRAMMER: UPDATE THIS"]
+
+  
+# Set current quota counts into CAVLs:
+
+  CAVL1.val = current1
+  if numVarieties &gt; 1:
+
+    CAVL2.val = current2
+  if numVarieties &gt; 2:
+ 
+   CAVL3.val = current3
+  
+if numVarieties &gt; 3:
+ 
+   CAVL4.val = current4
+
+  if numVarieties &gt; 4:
+ 
+   CAVL5.val = current5
+
+  # Set CTRY and CLTRY
+
+
+  if CS.r1.val gt 0:
+
+    CTRY.p1r1.val = 1
+
+  if numVarieties &gt; 1 and CS.r2.val gt 0:
+
+    CTRY.p1r2.val = 1
+
+  if numVarieties &gt; 2 and CS.r3.val gt 0:
+
+    CTRY.p1r3.val = 1
+
+  if numVarieties &gt; 3 and CS.r4.val gt 0:
+
+    CTRY.p1r4.val = 1
+
+  if numVarieties &gt; 4 and CS.r5.val gt 0:
+
+    CTRY.p1r5.val = 1
+
+  
+if CLK.r1.c1 or CLK.r1.c2:
+
+    CLTRY.p1r1.val = 1
+
+
+  if numVarieties &gt; 1 and CLK.r2.c1 or CLK.r2.c2:
+
+    CLTRY.p1r2.val = 1
+ 
+ if numVarieties &gt; 2 and CLK.r3.c1 or CLK.r3.c2:
+
+    CLTRY.p1r3.val = 1
+
+  if numVarieties &gt; 3 and CLK.r4.c1 or CLK.r4.c2:
+
+    CLTRY.p1r4.val = 1
+
+  if numVarieties &gt; 4 and CLK.r5.c1 or CLK.r5.c2:
+
+    CLTRY.p1r5.val = 1
+        
+
+  
+# Select varieties
+
+
+  standard = []
+
+  if CTRY.p1r1 and CAVL1.ival lt limit1:
+
+    standard.append('1')
+
+  if CTRY.p1r2 and CAVL2.ival lt limit2:
+
+    standard.append('2')
+ 
+ if CTRY.p1r3 and CAVL3.ival lt limit3:
+
+    standard.append('3')
+
+  if CTRY.p1r4 and CAVL4.ival lt limit4:
+
+    standard.append('4')
+
+  if CTRY.p1r5 and CAVL5.ival lt limit5:
+
+    standard.append('5')
+
+    
+
+  likelihood = []
+
+  if CLTRY.p1r1 and CAVL1.ival lt limit1:
+
+    likelihood.append('1')
+
+  if CLTRY.p1r2 and CAVL2.ival lt limit2:
+
+    likelihood.append('2')
+ 
+ if CLTRY.p1r3 and CAVL3.ival lt limit3:
+
+    likelihood.append('3')
+
+  if CLTRY.p1r4 and CAVL4.ival lt limit4:
+
+    likelihood.append('4')
+
+  if CLTRY.p1r5 and CAVL5.ival lt limit5:
+
+    likelihood.append('5')
+  
+
+
+  if len(standard) gt 0 or len(likelihood) gt 0:
+
+    CPLC1.val = CPLC1.r1.index
+
+    if len(standard) gt 0:
+
+      if len(standard) gt 1:
+
+       ranNum = random.randrange(0,len(standard),1)
+
+       code = standard[ranNum]
+
+      else:
+
+       code = standard[0]
+
+      CTYPE.val = CTYPE.r1.index
+    else:
+
+      if len(likelihood) gt 1:
+
+       ranNum = random.randrange(0,len(likelihood),1)
+
+       code = likelihood[ranNum]
+
+      else:
+
+       code = likelihood[0]
+
+      CTYPE.val = CTYPE.r2.index
+ 
+    if code == '1':
+
+      CVAR1.val = CVAR1.p2r1.index
+
+      CVAR2.val = CVAR2.p2r0.index
+
+      CVAR3.val = CVAR3.p2r0.index
+
+      CVAR4.val = CVAR4.p2r0.index
+
+      CVAR5.val = CVAR5.p2r0.index
+
+    elif code == '2':
+
+      CVAR1.val = CVAR1.p2r0.index
+
+      CVAR2.val = CVAR2.p2r1.index
+
+      CVAR3.val = CVAR3.p2r0.index
+
+      CVAR4.val = CVAR4.p2r0.index
+
+      CVAR5.val = CVAR5.p2r0.index
+
+    elif code == '3':
+
+      CVAR1.val = CVAR1.p2r0.index
+
+      CVAR2.val = CVAR2.p2r0.index
+ 
+     CVAR3.val = CVAR3.p2r1.index
+
+      CVAR4.val = CVAR4.p2r0.index
+
+      CVAR5.val = CVAR5.p2r0.index
+ 
+    elif code == '4':
+
+      CVAR1.val = CVAR1.p2r0.index
+
+      CVAR2.val = CVAR2.p2r0.index
+ 
+     CVAR3.val = CVAR3.p2r0.index
+
+      CVAR4.val = CVAR4.p2r1.index
+
+      CVAR5.val = CVAR5.p2r0.index
+
+    elif code == '5':
+
+      CVAR1.val = CVAR1.p2r0.index
+
+      CVAR2.val = CVAR2.p2r0.index
+ 
+     CVAR3.val = CVAR3.p2r0.index
+
+      CVAR4.val = CVAR4.p2r0.index
+
+      CVAR5.val = CVAR5.p2r1.index
+             
+
+if not placementEligible():
+
+  CVAR1.val = CVAR1.p2r0.index
+
+  CVAR2.val = CVAR2.p2r0.index
+ 
+ CVAR3.val = CVAR3.p2r0.index
+
+  CVAR4.val = CVAR4.p2r0.index
+
+  CVAR5.val = CVAR5.p2r0.index
+
+  </exec>

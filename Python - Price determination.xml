@@ -1,0 +1,713 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<survey>
+
+
+<radio
+ 
+  label="CAW1">
+
+  <title>Select response 1 for testing</title>
+
+  <row label="r1">the new product (PRODUCT #1 NAME GOES HERE)</row>
+
+  <row label="r2">the new product (PRODUCT #2 NAME GOES HERE)</row>
+
+</radio>
+
+
+
+<suspend/>
+
+
+
+<define label="p1" builder:title="Definitely would buy -&gt; Definitely would not buy">
+
+  <row label="p1r1">Definitely would buy</row>
+
+  <row label="p1r2">Probably would buy</row>
+
+  <row label="p1r3">Might or might not buy</row>
+
+  <row label="p1r4">Probably would not buy</row>
+
+  <row label="p1r5">Definitely would not buy</row>
+</define>
+
+
+<define label="p2" builder:title="One -&gt; None">
+
+  <row label="p2r1">One</row>
+
+  <row label="p2r2">Two</row>
+
+  <row label="p2r3">Three</row>
+
+  <row label="p2r4">Four</row>
+
+  <row label="p2r5">Five</row>
+
+  <row label="p2r6">Six</row>
+
+  <row label="p2r7">Seven</row>
+
+  <row label="p2r8">Eight</row>
+
+  <row label="p2r9">Nine or more</row>
+
+  <row label="p2r10" value="0">None</row>
+</define>
+
+
+<block label="BPA" builder:title="PriceAdvisor (Non-Calculated)">
+
+  <block label="b1" builder:title="BPA Section Question and Error Text">
+
+    <radio
+ 
+    label="xBPAText"
+
+     cond="not gv.isUser()"
+
+     where="execute,survey,report">
+      <title>BPA Text (Currency symbol, question text and error messages)</title>
+      <comment>PROGRAMMER: update the text below to match your study's needs. </comment>
+
+      <group label="g1" builder:axis="row" translateable="0">Currency Symbol</group>
+
+      <group label="g2" builder:axis="row" translateable="0">Question Text</group>
+
+      <group label="g3" builder:axis="row" translateable="0">Error Messages</group>
+
+      <row label="r1" groups="g1" translateable="0">$</row>
+
+      <row label="r2" groups="g2">it were</row>
+
+      <row label="r3" groups="g2">it were available</row>
+
+      <row label="r4" groups="g2">packages</row>
+
+      <row label="r5" groups="g2">this product</row>
+
+      <row label="r6" groups="g3">Error: You must enter a four-digit price into each box. Please check your responses.</row>
+
+      <row label="r7" groups="g3">Error: You cannot say 00.00 for any value. Please check your responses.</row>
+
+      <row label="r8" groups="g3">Error: Responses must be entered as four-digit number WITH a decimal point. Please check your responses.</row>
+
+      <row label="r9" groups="g3">Error: Average price must be more than the Very Good price. Please check your responses.</row>
+
+      <row label="r10" groups="g3">Error: Somewhat Poor price must be more than the Average price. Please check your responses.</row>
+
+    </radio>
+
+  </block>
+
+
+
+  <block label="b2" builder:title="Flags, Hidden Questions">
+
+    <exec>
+
+ErrorFlags.r1.val = 0
+
+ErrorFlags.r2.val = 0
+
+    </exec>
+
+
+
+    <number
+ 
+    label="CCMPT"
+
+     optional="0"
+
+     size="1"
+
+     translateable="0"
+
+     where="execute,survey,report">
+
+      <title>Tracking completion 1=complete, 4 = terminated</title>
+
+      <comment>Possible values: 0-5</comment>
+
+      <exec>
+
+CCMPT.val = 1
+
+      </exec>
+
+
+    </number>
+
+
+
+    <number
+ 
+    label="ErrorFlags"
+
+     optional="0"
+
+     randomize="0"
+
+     size="1"
+
+     translateable="0"
+
+     verify="range(0,1)"
+
+     where="execute,survey,report">
+
+      <title>Flag to check if price error has been thrown.</title>
+
+      <comment>Possible values: 0, 1</comment>
+
+      <row label="r1">Average Error Flag</row>
+
+      <row label="r2">Poor Error Flag</row>
+
+    </number>
+
+  </block>
+
+
+
+  <suspend/>
+
+
+
+  <text
+ 
+   label="vBPA"
+
+    optional="0"
+
+    randomize="0"
+
+    size="25"
+
+    sst="0">
+
+    <title>[pipe: PRT1]<br /><br />Now I would like you to think about the range of prices you would be willing to pay for [pipe: CAW1] based on what you know about the product from the picture and description that you read.<br /><br /><span>For the following questions, please enter the price as a four-digit number without a dollar sign, but with a decimal point.&amp;nbsp; The following represents how we would like the price entered:</span><br /><br /><span>##.##</span></title>
+
+    <comment><span style="color: #0000ff;">After reading each question, click in the box and enter a price.&amp;nbsp; You must enter a price in all three boxes to continue.</span></comment>
+
+    <validate>
+
+
+### PROGRAMMER: UPDATE THESE 2 LINES:
+
+
+numberOfDigitsInPrice = 4;
+  # set to 3 for a 3-digit price or 5 for a 5-digit price
+
+decimalPlacesUsed = False;
+  # True = decimal places are used, False = decimal places aren't used
+
+
+
+### PROGRAMMER: THERE IS NO STUDY-SPECIFIC CODE BEYOND THIS POINT
+if decimalPlacesUsed:
+
+  numberOfDigitsInPrice += 1
+  ## Length of the price needs to be +1 higher to account for decimal point
+
+  decimalPosition = numberOfDigitsInPrice - 3
+  ## The position of the decimal point
+
+  
+for eachRow in vBPA.rows:
+  
+ response = vBPA[eachRow].val
+ 
+  if decimalPlacesUsed:
+
+     if len(response) != numberOfDigitsInPrice:
+  ## check length of input
+        error(xBPAText.r8.text)
+        return
+ 
+    if response.count(".") != 1 or response[decimalPosition] != ".":
+   # check that there is only one decimal point and it's in the correct position
+        error(xBPAText.r8.text)
+        return
+elif not(decimalPlacesUsed):
+
+    if len(response) != numberOfDigitsInPrice:
+ ## check length of input
+        error(xBPAText.r6.text)
+        return
+ 
+    if response.count(".") gt 0:
+ ## check that there are no decimal points
+        error(xBPAText.r6.text)
+        return
+
+
+
+## check that entries are the numeric type needed, are not zero, and compare 3 entries 
+if decimalPlacesUsed:
+
+  try:
+
+    float(vBPA.r1.val) and float(vBPA.r2.val) and float(vBPA.r1.val)
+    ## check for real number
+
+    if float(vBPA.r1.val) == 0 or float(vBPA.r2.val) == 0 or float(vBPA.r3.val) == 0:
+    ## check for zero value
+
+      error(xBPAText.r7.text)
+
+    elif float(vBPA.r2.val) le float(vBPA.r1.val) and ErrorFlags.r1.val == 0:
+    ## compare entries (good vs average)
+
+      ErrorFlags.r1.val = 1
+
+      error(xBPAText.r9.text)
+
+    elif float(vBPA.r3.val) le float(vBPA.r2.val) and ErrorFlags.r2.val == 0:
+    ## compare entries (average vs poor)
+
+      ErrorFlags.r2.val = 1
+
+      error(xBPAText.r10.text)
+
+  except:
+
+    error(xBPAText.r6.text)
+      
+
+elif not(decimalPlacesUsed):
+
+  try:
+
+    int(vBPA.r1.val) and int(vBPA.r2.val) and int(vBPA.r1.val)
+    ## check for integer
+
+    if int(vBPA.r1.val) == 0 or int(vBPA.r2.val) == 0 or int(vBPA.r3.val) == 0:
+    ## check for zero value
+
+      error(xBPAText.r7.text)
+
+    elif int(vBPA.r2.val) le int(vBPA.r1.val) and ErrorFlags.r1.val == 0:
+      ## compare entries (good vs average)
+      ErrorFlags.r1.val = 1
+
+      error(xBPAText.r9.text)
+
+    elif int(vBPA.r3.val) le int(vBPA.r2.val) and ErrorFlags.r2.val == 0:
+      ## compare entries (average vs poor)
+
+      ErrorFlags.r2.val = 1
+
+      error(xBPAText.r10.text)
+
+  except:
+
+    error(xBPAText.r6.text)
+
+    </validate>
+
+
+    <row label="r1">At what price would [pipe:CAW1] be a very good value?</row>
+
+    <row label="r2">At what price would [pipe:CAW1] be an average value?</row>
+
+    <row label="r3">At what price would [pipe:CAW1] be a somewhat poor value?</row>
+
+  </text>
+
+
+
+  <suspend/>
+
+
+
+  <exec>
+
+## transfer input to questions for DP:
+
+CPGV.val = vBPA.r1.val
+
+CPAV.val = vBPA.r2.val
+
+CPPV.val = vBPA.r3.val
+
+
+
+## drop leading zeros and transfer input to questions used for piping:
+
+#VPRICES.r1.val = re.sub("^0+","",vBPA.r1.val)
+
+#VPRICES.r2.val = re.sub("^0+","",vBPA.r2.val)
+
+#VPRICES.r3.val = re.sub("^0+","",vBPA.r3.val)
+
+
+# PROVIDED BY DECIPHER SUPPORT TO AVERT SIMULATED DATA ISSUES:
+
+VPRICES.r1.val = re.sub("^0+","","%s" % vBPA.r1.val)
+
+VPRICES.r2.val = re.sub("^0+","","%s" % vBPA.r2.val)
+
+VPRICES.r3.val = re.sub("^0+","","%s" % vBPA.r3.val)
+
+  </exec>
+
+
+
+  <suspend/>
+
+
+
+  <text
+ 
+   label="CPGV"
+
+   fwidth="6"
+
+   optional="0"
+
+   randomize="0"
+
+   size="25"
+
+   translateable="0"
+
+   where="execute,survey,report">
+
+    <title>Good value price - retains the leading 0; this isn't used in the program, but is kept for Tab.</title>
+
+  </text>
+
+
+
+  <text
+ 
+   label="CPAV"
+
+   fwidth="6"
+
+   optional="0"
+
+   randomize="0"
+
+   size="25"
+
+   translateable="0"
+
+   where="execute,survey,report">
+
+    <title>Average value price - retains the leading 0; this isn't used in the program, but is kept for Tab.</title>
+
+  </text>
+
+
+
+  <text
+ 
+   label="CPPV"
+
+   fwidth="6"
+
+   optional="0"
+
+   randomize="0"
+
+   size="25"
+
+   translateable="0"
+
+   where="execute,survey,report">
+
+    <title>Poor value price - retains the leading 0; this isn't used in the program, but is kept for Tab.</title>
+
+  </text>
+
+
+
+  <text
+ 
+   label="VPRICES"
+
+   optional="0"
+
+   size="25"
+
+   translateable="0"
+
+   where="execute,survey,report">
+
+    <title><span>Good, Average and Poor value price - cuts off leading 0; this is used to display in the program.</span></title>
+
+    <row label="r1"><span>Good value price</span></row>
+
+    <row label="r2"><span>Average value price</span></row>
+
+    <row label="r3"><span>Poor value price</span></row>
+
+  </text>
+
+
+
+  <exec>
+
+## PROGRAMMER: update the value of "position" as follows:
+
+#	position = 1  - currency symbol should be displayed BEFORE the price, i.e. $1.00
+
+#	position = 2  - currency symbol should be displayed FOLLOWING the price, i.e. 1.00$
+
+position = 1
+
+
+if position == 1:
+
+  p.vgPrice = xBPAText.r1.text + VPRICES.r1.val
+
+  p.avPrice = xBPAText.r1.text + VPRICES.r2.val
+
+  p.poorPrice = xBPAText.r1.text + VPRICES.r3.val
+
+elif position == 2:
+
+  p.vgPrice = VPRICES.r1.val + xBPAText.r1.text
+
+  p.avPrice = VPRICES.r2.val + xBPAText.r1.text
+
+  p.poorPrice = VPRICES.r3.val + xBPAText.r1.text
+
+  
+
+p.itWereText = xBPAText.r2.text
+  
+p.itWereAvailText = xBPAText.r3.text
+
+p.packageText = xBPAText.r4.text
+
+p.thisProductText = xBPAText.r5.text
+
+  </exec>
+
+
+
+  <suspend/>
+
+
+
+  <block label="b3" builder:title="Respondent Questions">
+
+    <radio
+ 
+    label="CPGP"
+
+    builderHint="{&quot;rocochoName&quot;:&quot;radiogrid&quot;}"
+
+    randomize="0">
+
+      <title>How likely would you be to buy [pipe:CAW1] if it was ${p.vgPrice}?</title>
+
+      <insert source="p1"/>
+
+    </radio>
+
+
+
+    <suspend/>
+
+
+
+    <radio
+ 
+    label="CPGU"
+
+    cond="(CPGP.p1r1 or CPGP.p1r2 or CPGP.p1r3 or CPGP.p1r4)"
+    randomize="0"
+
+    values="order">
+
+      <title>At ${p.vgPrice}, about how many ${p.packageText}, if any, would you buy the first time you purchased [pipe:CAW1]?</title>
+
+      <insert source="p2"/>
+
+    </radio>
+
+
+
+    <suspend/>
+
+
+
+    <number
+ 
+    label="CPGF"
+
+    cond="(CPGU.p2r1 or CPGU.p2r2 or CPGU.p2r3 or CPGU.p2r4 or CPGU.p2r5 or CPGU.p2r6 or CPGU.p2r7 or CPGU.p2r8 or CPGU.p2r9)"
+
+    optional="0"
+
+    randomize="0"
+
+    size="2"
+
+    verify="range(0,99)">
+
+      <title>How many times a year would you buy [pipe: CAW1] at ${p.vgPrice} if ${p.itWereAvailText} where you shop?</title>
+
+      <comment><span style="color: #0000ff;">Please click in the box below and type a number.</span></comment>
+
+    </number>
+
+
+
+    <suspend/>
+
+
+
+    <radio
+ 
+    label="CPAP"
+
+    builderHint="{&quot;rocochoName&quot;:&quot;radiogrid&quot;}"
+
+    randomize="0">
+
+      <title>How likely would you be to buy [pipe: CAW1] if ${p.itWereText} ${p.avPrice}?</title>
+
+      <insert source="p1"/>
+
+    </radio>
+
+
+
+    <suspend/>
+
+
+
+    <radio
+ 
+    label="CPAU"
+
+    cond="(CPAP.p1r1 or CPAP.p1r2 or CPAP.p1r3 or CPAP.p1r4)"
+
+    randomize="0"
+
+    values="order">
+
+      <title>At ${p.avPrice}, about how many <span>${p.packageText}</span>, if any, would you buy the first time you purchased&amp;nbsp;<span>[pipe:CAW1]</span>?</title>
+
+      <insert source="p2"/>
+
+    </radio>
+
+
+
+    <suspend/>
+
+
+
+    <number
+ 
+    label="CPAF"
+
+    cond="(CPAU.p2r1 or CPAU.p2r2 or CPAU.p2r3 or CPAU.p2r4 or CPAU.p2r5 or CPAU.p2r6 or CPAU.p2r7 or CPAU.p2r8 or CPAU.p2r9)"
+
+    optional="0"
+
+    randomize="0"
+
+    size="2"
+
+    verify="range(0,99)">
+
+      <title>How many times a year would you buy [pipe: CAW1] at ${p.avPrice} if&amp;nbsp;<span>${p.itWereAvailText}&amp;nbsp;</span>where you shop?</title>
+
+      <comment><span style="color: #0000ff;">Please click in the box below and type a number.</span></comment>
+
+    </number>
+
+
+
+    <suspend/>
+
+
+
+    <radio
+ 
+    label="CPPP"
+
+    builderHint="{&quot;rocochoName&quot;:&quot;radiogrid&quot;}"
+
+    randomize="0">
+
+      <title>How likely would you be to buy [pipe: CAW1] if ${p.itWereText} ${p.poorPrice}?</title>
+
+      <insert source="p1"/>
+
+    </radio>
+
+
+
+    <suspend/>
+
+
+
+    <radio
+ 
+    label="CPPU"
+
+    cond="(CPPP.p1r1 or CPPP.p1r2 or CPPP.p1r3 or CPPP.p1r4)"
+
+    randomize="0"
+
+    values="order">
+
+      <title>At ${p.poorPrice}, about how many ${p.packageText}, if any, would you buy the first time you purchased<span>&amp;nbsp;[pipe:CAW1]</span>?</title>
+
+      <insert source="p2"/>
+
+    </radio>
+
+
+
+    <suspend/>
+
+
+
+    <number
+ 
+    label="CPPF"
+
+    cond="(CPPU.p2r1 or CPPU.p2r2 or CPPU.p2r3 or CPPU.p2r4 or CPPU.p2r5 or CPPU.p2r6 or CPPU.p2r7 or CPPU.p2r8 or CPPU.p2r9)"
+
+    optional="0"
+
+    randomize="0"
+
+    size="2"
+
+    verify="range(0,99)">
+
+      <title>How many times a year would you buy [pipe: CAW1] at ${p.poorPrice} if <span>${p.itWereAvailText}</span> where you shop?</title>
+
+      <comment><span style="color: #0000ff;">Please click in the box below and type a number.</span></comment>
+
+    </number>
+
+  </block>
+
+
+
+  <suspend/>
+
+
+</block>
+
+
+
+<suspend/>
+
+
+</survey>
